@@ -41,3 +41,7 @@ $ expence-cli summary
 $ expence-cli summary --month 8
 # Total expenses for August: $20
 ```
+
+```
+https://roadmap.sh/projects/expense-tracker/solutions?u=683f2cb21e1dbfe14ceb58a4
+```
