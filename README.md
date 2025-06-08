@@ -1,6 +1,9 @@
 # Expense-Tracker-Cli
 
-this is a simple cli tool made for tracking your expences
+this is a simple cli tool made for tracking your expences, i the motivation behind this tool is a challenge i found in roadmap.sh website which you can see at this url:
+```
+https://roadmap.sh/projects/expense-tracker
+```
 
 ## features
 1. Users can add an expense with a description and amount.
