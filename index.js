@@ -3,7 +3,9 @@
 import * as FilesControl from './FIlesControl.js';
 import * as Helpers from './Helper.js'
 
-// import Tasks Related to Files
+
+
+// functions Related to I/O on Files Tasks
 const {
   PrepareRequiredFiles,
   GetNextId,
@@ -13,11 +15,10 @@ const {
   ReadConfigFile
 } = FilesControl;
 
-
-
+// Helper Function Used But Not Dirctly Related to Business Logic
 const {
     ParseNamedArguments,
-    GetCurrentMonthStringFromDateObject,
+    GetCurrentMonthIndexFromDateObject,
     GetMonthStringFromExpenceObject,
     GetMonthString,
     CheckMonthMached,
@@ -25,8 +26,8 @@ const {
 } = Helpers
 
 
-// Data Construction
 
+// Data Construction Tasks
 const CreateExpenceObject = (Description, Amount) => {
     const now = new Date();
     const ExpenceObject = {
@@ -41,7 +42,6 @@ const CreateExpenceObject = (Description, Amount) => {
 
 
 // business logic
-
 const NewExpenceSatisfyConfig = async (Expence) => {
 
     // check if expence will satisfy some conditions after it added to the Storage
@@ -52,7 +52,7 @@ const NewExpenceSatisfyConfig = async (Expence) => {
     const budjet = Configs.budjet;
 
     const now = new Date()
-    const CurrentMonth = GetCurrentMonthStringFromDateObject(now)
+    const CurrentMonth = GetCurrentMonthIndexFromDateObject(now)
     const CurrentTotal = await GetExpencesSummary(CurrentMonth);
     const NewTotal = CurrentTotal + parseInt(Expence.amount);
 
@@ -71,11 +71,16 @@ const UpdatedExpenceSatisfyConfig = async (Expence, ExpenceId) => {
 
     const Expences = await GetExpences() 
     const Configs = GetConfigDate();
-    const budjet = Configs.budjet;
+
     const now = new Date()
-    const CurrentMonth = GetCurrentMonthStringFromDateObject(now)
+
+    const budjet = Configs.budjet;
+    
+    const CurrentMonth = GetCurrentMonthIndexFromDateObject(now)
     const CurrentTotal = await GetExpencesSummary(CurrentMonth);
-    const NewTotal = (CurrentTotal + (Expence.amount - Expences[ExpenceId].amount))
+
+    const UpdatedExpenceIndex = Expences.findIndex(Expence => Expence.id == (ExpenceId));
+    const NewTotal = (CurrentTotal + (Expence.amount - parseFloat(Expences[UpdatedExpenceIndex].amount)))
 
     if(NewTotal > budjet){
         console.log("it seems like this action will excessed your budjet we will add it any way.");
@@ -86,7 +91,6 @@ const UpdatedExpenceSatisfyConfig = async (Expence, ExpenceId) => {
 
     return true;
 }
-
 
 const AddNewExpenceObject = async (ExpenceObject) => {
 
@@ -104,6 +108,11 @@ const AddNewExpenceObject = async (ExpenceObject) => {
 const UpdateExpenceObject = async (NewDescription=null, NewAmount=null, ExpenceId) => {
     const Expences = await GetExpences();
     const ExpenceIndex = Expences.findIndex(Expence => Expence.id == (ExpenceId));
+
+    if(ExpenceIndex === -1){
+        console.log(`Expence with ID(${ExpenceId}) does not exist.`)
+        return
+    }
 
     if (NewDescription){
 
@@ -123,22 +132,27 @@ const UpdateExpenceObject = async (NewDescription=null, NewAmount=null, ExpenceI
         await SaveAllExpenceToFile(Expences);
         console.log(`Expence with id ${Expences[ExpenceIndex].id} updated`);
         return true;
+    } else {
+        console.log("Can't Update This Expence Right now")
     }
 }
 
 const DeleteExpenceObject = async (ExpenceId) => {
     const Expences = await GetExpences();
-    // console.log(Expences)
     const ExpenceIndex = Expences.findIndex(Expence => Expence.id == (ExpenceId));
 
-    if (ExpenceIndex == -1)
-        return null
+    if(ExpenceIndex === -1){
+        console.log(`Expence with ID(${ExpenceId}) does not exist.`)
+        return false
+    }
 
     // delete the object
-    const [DeletedObject] = Expences.splice(ExpenceIndex, 1);
-    
+    const DeletedExpence = Expences.splice(ExpenceIndex, 1);
+
     await SaveAllExpenceToFile(Expences);
-    return DeletedObject;
+
+    console.log(`Expence With ID(${DeletedExpence.id}) Deleted Seccessfully`)
+    return true;
 }
 
 
@@ -182,8 +196,8 @@ const GetConfigDate = () => {
     return ReadConfigFile()
 }
 
-// data representaion
 
+// data representaion
 const DisplayExpences = (Expences) => {
     Expences.forEach((element, ind) => {
         console.log(`${ind+1}. ${element.description} ${element.amount}.`)
@@ -191,29 +205,43 @@ const DisplayExpences = (Expences) => {
 }
 
 // orcistrators
-
 const CommandsMapper = async (Command) => {
+
+    // get the arguments passed with the command
     const args = ParseNamedArguments();
+
     switch(Command){
         case('add'):
             if(!args.hasOwnProperty("description"))
-                console.log("please provide description");
+                console.log("Please Provide an Expence Description");
             else if (!args.hasOwnProperty("amount") || isNaN(args["amount"]) || args["amount"] < 0)
-                console.log("please provide valid amount");
+                console.log("Please Provide Valid Amount (Postive number).");
             else {
+                // construct new Expence Object
                 const ExpenceObject = CreateExpenceObject(args["description"], args["amount"]);
-                await AddNewExpenceObject(ExpenceObject);                
+
+                // add the Expence to Storage
+                await AddNewExpenceObject(ExpenceObject);
             }
             break;
         case("delete"):
             if(!args.hasOwnProperty("id"))
-                console.log("Please Provide Expence Id.")
+                console.log("Please Pass The Expence Id.")
             else {
+                // start process of deleteing Expence with given ID
                 await DeleteExpenceObject(args['id']);
             }
             break;
         case("list"):
-            const Expences = await GetExpences();
+
+            let Month = null;
+
+            if(args.hasOwnProperty('month'))
+                Month = args['month'];
+
+            // Get the Expences From the Storage
+            const Expences = await GetExpences(Month);
+
             if (Expences.length <= 0)
                 console.log("No Expences To Display");
             else 
@@ -221,10 +249,10 @@ const CommandsMapper = async (Command) => {
             break;
         case('update'):
             if(!args.hasOwnProperty('id'))
-                console.log("Provide an Id");
+                console.log("Please Provide Expence ID");
             else {
                 if(!args.hasOwnProperty('newdescription') &&  !args.hasOwnProperty('newamount'))
-                    console.log("Please Provide new Valid data please");
+                    console.log("Please Provide Your New Valid Data (newdescription or newamount)");
                 else {
                     const NewDescription = args.hasOwnProperty('newdescription') ? args['newdescription']: null;
                     const NewAmount = args.hasOwnProperty('newamount') ? args['newamount']: null;
@@ -243,22 +271,18 @@ const CommandsMapper = async (Command) => {
 
             break;
         default:
-            console.log("Unknown command. Use `add` or `list`.");
+            console.log("USAGE:  Expence-Cli <Command> --<ArgumentName> <ArgumentValue> ");
             break;
     }
 }
 
 (async () => {
-    try {
-        const Command = process.argv[2];
-        if (Command) {
-            PrepareRequiredFiles();
-            await CommandsMapper(Command);
-        } else {
-            console.log("USAGE <command> <argument>");
-        }
-    } catch (err) {
-        console.error("Error:", err.message);
+    const Command = process.argv[2];
+    if (Command) {
+        PrepareRequiredFiles();
+        await CommandsMapper(Command);
+    } else {
+        console.log("USAGE:  Expence-Cli <Command> --<ArgumentName> <ArgumentValue> ");
     }
 })();
 

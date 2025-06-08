@@ -28,12 +28,12 @@ const GetMonthStringFromExpenceObject = (ExpenceObject) => {
     return ExpenceDate[1]
 }
 
-const GetCurrentMonthStringFromDateObject = (DateObject) => {
+const  GetCurrentMonthIndexFromDateObject = (DateObject) => {
 
   const DateString = DateObject.toDateString();
   const CurrentMonthFUllString = DateString.split(' ')[1];
   
-  return GetMonthString(GetMonthIndex(CurrentMonthFUllString))
+  return GetMonthIndex(CurrentMonthFUllString);
   
 }
 
@@ -66,8 +66,7 @@ const GetMonthIndex = (MonthFullString) => {
     "November",
     "December"
   ];
-  // months.findIndex(MonthString => MonthString === MonthFullString)
-  return 0
+  return months.findIndex(MonthString => MonthString === MonthFullString) + 1
 }
 
 const CheckMonthMached = (MonthIndex, MonthString) => {
@@ -105,9 +104,10 @@ const ReadUserBooleanInput = () => {
 
 export{
     ParseNamedArguments,
-    GetCurrentMonthStringFromDateObject,
+    GetCurrentMonthIndexFromDateObject,
     GetMonthStringFromExpenceObject,
     GetMonthString,
     CheckMonthMached,
-    ReadUserBooleanInput
+    ReadUserBooleanInput,
+    GetMonthIndex
 }

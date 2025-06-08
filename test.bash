@@ -1,40 +1,40 @@
 #!/usr/bin/env bash
 
 echo ".........."
-node index.js list
+Expence-Cli list
 
 echo ".........."
 echo "\t add command"
-node index.js add description
-node index.js add description hello amount
-node index.js add description hello amount 4
-node index.js add description hello2 amount 44
-node index.js add description hello3 amount 444
+Expence-Cli add description
+Expence-Cli add description hello amount
+Expence-Cli add description hello amount 4
+Expence-Cli add description hello2 amount 44
+Expence-Cli add description hello3 amount 444
 
 echo ".........."
 echo "\t update command"
-node index.js update id
-node index.js update id 1  newdescription
-node index.js update id 1  newdescription "HelloFromUpdate"
-node index.js update id 1  newamount 
-node index.js update id 1  newamount 55
-node index.js update id 1  newdescription "NewDescrip" newamout 66
+Expence-Cli update id
+Expence-Cli update id 1  newdescription
+Expence-Cli update id 1  newdescription "HelloFromUpdate"
+Expence-Cli update id 1  newamount 
+Expence-Cli update id 1  newamount 55
+Expence-Cli update id 1  newdescription "NewDescrip" newamout 66
 
 
 echo ".........."
 echo "\t delete command"
-node index.js delete id
-# node index.js delete id 1
-node index.js delete id 100000
+Expence-Cli delete id
+# Expence-Cli delete id 1
+Expence-Cli delete id 100000
 
 echo ".........."
 echo "\t list command"
-node index.js list
+Expence-Cli list
 
 echo ".........."
 echo "\t summary command"
-node index.js summary
-node index.js summary month 
-node index.js summary month 6
-node index.js summary month 44
+Expence-Cli summary
+Expence-Cli summary month 
+Expence-Cli summary month 6
+Expence-Cli summary month 44
 
